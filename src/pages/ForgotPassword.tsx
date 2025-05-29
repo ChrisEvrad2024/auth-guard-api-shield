@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { KeyRound, ArrowLeft, Check, Mail } from 'lucide-react';
+import { KeyRound, ArrowLeft, Check } from 'lucide-react';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -39,26 +39,23 @@ const ForgotPassword = () => {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+      <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
         <div className="w-full max-w-md">
-          <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl overflow-hidden">
-            <CardHeader className="text-center pb-8 pt-8 px-8">
-              <div className="mx-auto w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
-                <Check className="h-10 w-10 text-white" />
+          <Card className="auth-card">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+                <Check className="h-6 w-6 text-green-400" />
               </div>
-              <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Email envoyé</CardTitle>
-              <CardDescription className="text-gray-600 text-lg">
+              <CardTitle className="text-2xl font-bold text-white">Email envoyé</CardTitle>
+              <CardDescription className="text-white/70">
                 Vérifiez votre boîte mail et suivez les instructions pour réinitialiser votre mot de passe
               </CardDescription>
             </CardHeader>
-            <CardContent className="px-8 pb-8">
+            <CardContent>
               <div className="text-center">
                 <Link to="/login">
-                  <Button 
-                    variant="outline" 
-                    className="text-indigo-600 border-2 border-indigo-200 hover:bg-indigo-50 h-12 px-6 font-semibold rounded-xl transition-all duration-200"
-                  >
-                    <ArrowLeft className="h-5 w-5 mr-2" />
+                  <Button variant="ghost" className="text-white hover:bg-white/10">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
                     Retour à la connexion
                   </Button>
                 </Link>
@@ -71,62 +68,48 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+    <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
       <div className="w-full max-w-md">
-        {/* Bouton retour */}
-        <div className="mb-8">
-          <Link 
-            to="/login" 
-            className="inline-flex items-center text-white/90 hover:text-white transition-colors text-sm font-medium backdrop-blur-sm bg-white/10 px-4 py-2 rounded-xl"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour à la connexion
-          </Link>
-        </div>
-
-        <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl overflow-hidden">
-          <CardHeader className="text-center pb-8 pt-8 px-8">
-            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
-              <KeyRound className="h-10 w-10 text-white" />
+        <Card className="auth-card">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
+              <KeyRound className="h-6 w-6 text-white" />
             </div>
-            <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Mot de passe oublié</CardTitle>
-            <CardDescription className="text-gray-600 text-lg">
+            <CardTitle className="text-2xl font-bold text-white">Mot de passe oublié</CardTitle>
+            <CardDescription className="text-white/70">
               Saisissez votre email pour recevoir un lien de réinitialisation
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8 px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="email" className="text-gray-700 font-semibold text-base">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="pl-12 h-14 border-2 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl text-lg transition-all duration-200"
-                    required
-                  />
-                </div>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-white">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  required
+                />
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl rounded-xl"
+                className="w-full bg-white text-purple-600 hover:bg-white/90 transition-all duration-200"
                 disabled={loading}
               >
-                {loading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                    Envoi...
-                  </div>
-                ) : (
-                  'Envoyer le lien'
-                )}
+                {loading ? 'Envoi...' : 'Envoyer le lien'}
               </Button>
             </form>
+
+            <div className="mt-6 text-center">
+              <Link to="/login" className="text-white/70 hover:text-white text-sm">
+                <ArrowLeft className="h-4 w-4 inline mr-1" />
+                Retour à la connexion
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
