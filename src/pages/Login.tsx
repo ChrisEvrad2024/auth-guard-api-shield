@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, Shield } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Shield, ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ const Login = () => {
       await login(email, password);
       toast({
         title: "Connexion réussie",
-        description: "Bienvenue !",
+        description: "Bienvenue sur votre tableau de bord !",
       });
       navigate('/dashboard');
     } catch (error: any) {
@@ -40,53 +40,66 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
       <div className="w-full max-w-md">
-        <Card className="auth-card">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
-              <Shield className="h-6 w-6 text-white" />
+        {/* Bouton retour */}
+        <div className="mb-6">
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour à l'accueil
+          </Link>
+        </div>
+
+        <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl">
+          <CardHeader className="text-center pb-6">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <Shield className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Connexion</CardTitle>
-            <CardDescription className="text-white/70">
-              Connectez-vous à votre compte sécurisé
+            <CardTitle className="text-2xl font-bold text-gray-900">Connexion</CardTitle>
+            <CardDescription className="text-gray-600">
+              Accédez à votre espace sécurisé
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-white/60" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="votre@email.com"
-                    className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                    className="pl-10 h-12 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">Mot de passe</Label>
+                <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-white/60" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Votre mot de passe"
-                    className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                    className="pl-10 pr-12 h-12 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-white/60 hover:text-white"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -94,9 +107,19 @@ const Login = () => {
               </div>
 
               <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center space-x-2">
+                  <input
+                    id="remember"
+                    type="checkbox"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="remember" className="text-gray-600">
+                    Se souvenir de moi
+                  </label>
+                </div>
                 <Link 
                   to="/forgot-password" 
-                  className="text-white/70 hover:text-white transition-colors"
+                  className="text-indigo-600 hover:text-indigo-500 transition-colors"
                 >
                   Mot de passe oublié ?
                 </Link>
@@ -104,18 +127,27 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-white text-purple-600 hover:bg-white/90 transition-all duration-200"
+                className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 disabled={loading}
               >
-                {loading ? 'Connexion...' : 'Se connecter'}
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Connexion...
+                  </div>
+                ) : (
+                  'Se connecter'
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-white/70">
-              Pas encore de compte ?{' '}
-              <Link to="/register" className="text-white hover:underline font-medium">
-                S'inscrire
-              </Link>
+            <div className="text-center pt-4 border-t border-gray-100">
+              <p className="text-gray-600">
+                Pas encore de compte ?{' '}
+                <Link to="/register" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
+                  S'inscrire gratuitement
+                </Link>
+              </p>
             </div>
           </CardContent>
         </Card>

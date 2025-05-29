@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Mail, RefreshCw } from 'lucide-react';
+import { Mail, RefreshCw, CheckCircle } from 'lucide-react';
 
 const VerifyEmail = () => {
   const [code, setCode] = useState('');
@@ -59,55 +59,79 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center gradient-bg p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
       <div className="w-full max-w-md">
-        <Card className="auth-card">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-white" />
+        <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl">
+          <CardHeader className="text-center pb-6">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <Mail className="h-8 w-8 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Vérification Email</CardTitle>
-            <CardDescription className="text-white/70">
+            <CardTitle className="text-2xl font-bold text-gray-900">Vérification Email</CardTitle>
+            <CardDescription className="text-gray-600">
               Saisissez le code à 6 chiffres envoyé à votre adresse email
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start space-x-3">
+                <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Email envoyé !</p>
+                  <p className="text-sm text-blue-700 mt-1">
+                    Vérifiez votre boîte mail (et vos spams) pour le code de vérification.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="code" className="text-white">Code de vérification</Label>
+              <div className="space-y-3">
+                <Label htmlFor="code" className="text-gray-700 font-medium">Code de vérification</Label>
                 <Input
                   id="code"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="123456"
-                  className="text-center text-2xl tracking-widest bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                  className="text-center text-2xl tracking-[0.5em] h-14 font-mono border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
                   maxLength={6}
                   required
                 />
+                <p className="text-xs text-gray-500 text-center">
+                  Entrez les 6 chiffres reçus par email
+                </p>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-white text-purple-600 hover:bg-white/90 transition-all duration-200"
+                className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 disabled={loading || code.length !== 6}
               >
-                {loading ? 'Vérification...' : 'Vérifier'}
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Vérification...
+                  </div>
+                ) : (
+                  'Vérifier mon email'
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-white/70 text-sm mb-3">
+            <div className="text-center pt-4 border-t border-gray-100">
+              <p className="text-gray-600 text-sm mb-4">
                 Vous n'avez pas reçu le code ?
               </p>
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={handleResend}
                 disabled={resendLoading}
-                className="text-white hover:bg-white/10"
+                className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
               >
                 <RefreshCw className={`h-4 w-4 mr-2 ${resendLoading ? 'animate-spin' : ''}`} />
-                Renvoyer le code
+                {resendLoading ? 'Envoi...' : 'Renvoyer le code'}
               </Button>
             </div>
           </CardContent>
