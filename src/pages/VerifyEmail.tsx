@@ -59,59 +59,57 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-    }}>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
       <div className="w-full max-w-md">
-        <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl">
-          <CardHeader className="text-center pb-6">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
-              <Mail className="h-8 w-8 text-white" />
+        <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl overflow-hidden">
+          <CardHeader className="text-center pb-8 pt-8 px-8">
+            <div className="mx-auto w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
+              <Mail className="h-10 w-10 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Vérification Email</CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Vérification Email</CardTitle>
+            <CardDescription className="text-gray-600 text-lg">
               Saisissez le code à 6 chiffres envoyé à votre adresse email
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <CardContent className="space-y-8 px-8 pb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+              <div className="flex items-start space-x-4">
+                <CheckCircle className="h-6 w-6 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-blue-900">Email envoyé !</p>
-                  <p className="text-sm text-blue-700 mt-1">
+                  <p className="text-sm font-semibold text-blue-900 mb-1">Email envoyé !</p>
+                  <p className="text-sm text-blue-700">
                     Vérifiez votre boîte mail (et vos spams) pour le code de vérification.
                   </p>
                 </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-3">
-                <Label htmlFor="code" className="text-gray-700 font-medium">Code de vérification</Label>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-4">
+                <Label htmlFor="code" className="text-gray-700 font-semibold text-lg">Code de vérification</Label>
                 <Input
                   id="code"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="123456"
-                  className="text-center text-2xl tracking-[0.5em] h-14 font-mono border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                  className="text-center text-3xl tracking-[0.8em] h-16 font-mono border-2 border-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl transition-all duration-200"
                   maxLength={6}
                   required
                 />
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-sm text-gray-500 text-center font-medium">
                   Entrez les 6 chiffres reçus par email
                 </p>
               </div>
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl rounded-xl"
                 disabled={loading || code.length !== 6}
               >
                 {loading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
                     Vérification...
                   </div>
                 ) : (
@@ -120,17 +118,17 @@ const VerifyEmail = () => {
               </Button>
             </form>
 
-            <div className="text-center pt-4 border-t border-gray-100">
-              <p className="text-gray-600 text-sm mb-4">
+            <div className="text-center pt-6 border-t border-gray-100">
+              <p className="text-gray-600 text-base mb-4 font-medium">
                 Vous n'avez pas reçu le code ?
               </p>
               <Button
                 variant="outline"
                 onClick={handleResend}
                 disabled={resendLoading}
-                className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                className="text-indigo-600 border-2 border-indigo-200 hover:bg-indigo-50 h-12 px-6 font-semibold rounded-xl transition-all duration-200"
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${resendLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-5 w-5 mr-2 ${resendLoading ? 'animate-spin' : ''}`} />
                 {resendLoading ? 'Envoi...' : 'Renvoyer le code'}
               </Button>
             </div>
