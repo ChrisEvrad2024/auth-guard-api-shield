@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -54,11 +53,19 @@ const Register = () => {
     setLoading(true);
 
     try {
+      // Appel de l'inscription
       await register(email, password);
+      
+      // Stocker l'email temporairement pour la vérification
+      // Vous pouvez utiliser sessionStorage ou votre service auth
+      sessionStorage.setItem('tempEmail', email);
+      
       toast({
         title: "Inscription réussie",
-        description: "Vérifiez votre email pour confirmer votre compte",
+        description: "Un code de vérification a été envoyé à votre email",
       });
+      
+      // Redirection vers la page de vérification
       navigate('/verify-email');
     } catch (error: any) {
       toast({

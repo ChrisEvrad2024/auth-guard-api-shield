@@ -1,5 +1,6 @@
+// VerifyEmail.tsx - Version corrigée
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,30 +8,75 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { Mail, RefreshCw, CheckCircle } from 'lucide-react';
+import { Mail, RefreshCw, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const VerifyEmail = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const { verifyEmail, resendVerificationCode } = useAuth();
   const navigate = useNavigate();
 
+  // Récupérer l'email au chargement du composant
+  useEffect(() => {
+    const tempEmail = sessionStorage.getItem('tempEmail');
+    if (!tempEmail) {
+      toast({
+        title: "Erreur",
+        description: "Aucun email trouvé. Veuillez vous réinscrire.",
+        variant: "destructive",
+      });
+      navigate('/register');
+      return;
+    }
+    setUserEmail(tempEmail);
+  }, [navigate]);
+
+  // CORRECTION: Passer email ET code
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!userEmail) {
+      toast({
+        title: "Erreur",
+        description: "Email introuvable. Veuillez vous réinscrire.",
+        variant: "destructive",
+      });
+      navigate('/register');
+      return;
+    }
+
+    if (code.length !== 6) {
+      toast({
+        title: "Code invalide",
+        description: "Le code doit contenir exactement 6 chiffres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await verifyEmail(code);
+      // CORRECTION: Passer l'email ET le code
+      await verifyEmail(userEmail, code);
+      
+      // Nettoyer l'email temporaire après succès
+      sessionStorage.removeItem('tempEmail');
+      
       toast({
         title: "Email vérifié",
         description: "Votre compte a été activé avec succès !",
       });
-      navigate('/dashboard');
+      
+      // Rediriger vers le dashboard ou la page de connexion
+      navigate('/login');
     } catch (error: any) {
+      console.error('Erreur de vérification:', error);
       toast({
         title: "Code invalide",
-        description: error.message || "Le code de vérification est incorrect",
+        description: error.message || "Le code de vérification est incorrect ou expiré",
         variant: "destructive",
       });
     } finally {
@@ -38,16 +84,31 @@ const VerifyEmail = () => {
     }
   };
 
+  // CORRECTION: Passer l'email
   const handleResend = async () => {
+    if (!userEmail) {
+      toast({
+        title: "Erreur",
+        description: "Email introuvable. Veuillez vous réinscrire.",
+        variant: "destructive",
+      });
+      navigate('/register');
+      return;
+    }
+
     setResendLoading(true);
 
     try {
-      await resendVerificationCode();
+      // CORRECTION: Passer l'email à la fonction de renvoi
+      await resendVerificationCode(userEmail);
       toast({
         title: "Code renvoyé",
         description: "Un nouveau code de vérification a été envoyé",
       });
+      // Réinitialiser le code saisi
+      setCode('');
     } catch (error: any) {
+      console.error('Erreur de renvoi:', error);
       toast({
         title: "Erreur",
         description: error.message || "Impossible de renvoyer le code",
@@ -58,9 +119,34 @@ const VerifyEmail = () => {
     }
   };
 
+  const handleBackToRegister = () => {
+    sessionStorage.removeItem('tempEmail');
+    navigate('/register');
+  };
+
+  // Masquer partiellement l'email pour l'affichage
+  const getMaskedEmail = (email: string) => {
+    if (!email) return '';
+    const [username, domain] = email.split('@');
+    if (username.length <= 2) return email;
+    const maskedUsername = username[0] + '*'.repeat(username.length - 2) + username[username.length - 1];
+    return `${maskedUsername}@${domain}`;
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
       <div className="w-full max-w-md">
+        {/* Bouton retour */}
+        <div className="mb-6">
+          <button
+            onClick={handleBackToRegister}
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors text-sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour à l'inscription
+          </button>
+        </div>
+
         <Card className="bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-2xl overflow-hidden">
           <CardHeader className="text-center pb-8 pt-8 px-8">
             <div className="mx-auto w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-xl">
@@ -70,6 +156,11 @@ const VerifyEmail = () => {
             <CardDescription className="text-gray-600 text-lg">
               Saisissez le code à 6 chiffres envoyé à votre adresse email
             </CardDescription>
+            {userEmail && (
+              <p className="text-sm text-indigo-600 font-medium mt-2">
+                {getMaskedEmail(userEmail)}
+              </p>
+            )}
           </CardHeader>
           <CardContent className="space-y-8 px-8 pb-8">
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
@@ -105,7 +196,7 @@ const VerifyEmail = () => {
               <Button
                 type="submit"
                 className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl rounded-xl"
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length !== 6 || !userEmail}
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -125,7 +216,7 @@ const VerifyEmail = () => {
               <Button
                 variant="outline"
                 onClick={handleResend}
-                disabled={resendLoading}
+                disabled={resendLoading || !userEmail}
                 className="text-indigo-600 border-2 border-indigo-200 hover:bg-indigo-50 h-12 px-6 font-semibold rounded-xl transition-all duration-200"
               >
                 <RefreshCw className={`h-5 w-5 mr-2 ${resendLoading ? 'animate-spin' : ''}`} />

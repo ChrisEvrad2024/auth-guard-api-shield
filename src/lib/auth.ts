@@ -1,7 +1,6 @@
-
 import { toast } from "@/hooks/use-toast";
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 export interface User {
   id: number;
@@ -19,8 +18,19 @@ export interface User {
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  accessToken: string; // Corrigé: backend renvoie 'accessToken' pas 'token'
   refreshToken: string;
+  expiresIn: string;
+}
+
+export interface RegisterResponse {
+  status: string;
+  message: string;
+  data: {
+    id: number;
+    email: string;
+    verificationCode?: string; // En développement
+  };
 }
 
 class AuthService {
@@ -42,23 +52,31 @@ class AuthService {
       ...options,
     };
 
-    const response = await fetch(url, config);
-    const data = await response.json();
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || 'Something went wrong');
+      if (!response.ok) {
+        // Gestion des erreurs spécifiques
+        const errorMessage = data.message || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errorMessage);
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(`API Error [${endpoint}]:`, error.message);
+        throw error;
+      }
+      throw new Error('Network error occurred');
     }
-
-    return data;
   }
 
-  async register(email: string, password: string) {
-    const data = await this.request('/auth/register', {
+  async register(email: string, password: string): Promise<RegisterResponse> {
+    return this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-
-    return data;
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
@@ -67,64 +85,84 @@ class AuthService {
       body: JSON.stringify({ email, password }),
     });
 
-    this.setTokens(data.token, data.refreshToken);
-    return data;
+    // Corrigé: utiliser 'accessToken' au lieu de 'token'
+    this.setTokens(data.data.accessToken, data.data.refreshToken);
+    return data.data;
   }
 
-  async verifyEmail(code: string) {
-    const data = await this.request('/auth/verify-email', {
+  // CORRIGÉ: Ajouter l'email comme paramètre
+  async verifyEmail(email: string, code: string) {
+    return this.request('/auth/verify-email', {
       method: 'POST',
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ email, code }),
     });
-
-    return data;
   }
 
-  async resendVerificationCode() {
-    const data = await this.request('/auth/resend-verification', {
-      method: 'POST',
-    });
-
-    return data;
-  }
-
-  async requestPasswordReset(email: string) {
-    const data = await this.request('/auth/request-password-reset', {
+  // CORRIGÉ: Ajouter l'email comme paramètre
+  async resendVerificationCode(email: string) {
+    return this.request('/auth/resend-verification', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
+  }
 
-    return data;
+  async requestPasswordReset(email: string) {
+    return this.request('/auth/request-password-reset', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
   }
 
   async changePassword(currentPassword: string, newPassword: string) {
-    const data = await this.request('/auth/change-password', {
+    return this.request('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify({ currentPassword, newPassword }),
     });
-
-    return data;
   }
 
   async getCurrentUser(): Promise<User> {
     const data = await this.request('/auth/me');
-    return data.user;
+    return data.data;
   }
 
-  async toggleMFA() {
-    const data = await this.request('/auth/mfa', {
+  async toggleMFA(enable: boolean) {
+    return this.request('/auth/mfa/toggle', {
       method: 'POST',
+      body: JSON.stringify({ enable }),
+    });
+  }
+
+  async refreshAccessToken(): Promise<string> {
+    if (!this.refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    const data = await this.request('/auth/refresh-token', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken: this.refreshToken }),
     });
 
-    return data;
+    this.token = data.data.accessToken;
+    localStorage.setItem('token', this.token);
+    
+    return this.token;
   }
 
   async logout() {
     try {
-      await this.request('/auth/logout', {
-        method: 'POST',
-        body: JSON.stringify({ refreshToken: this.refreshToken }),
-      });
+      if (this.refreshToken) {
+        await this.request('/auth/logout', {
+          method: 'POST',
+          body: JSON.stringify({ refreshToken: this.refreshToken }),
+        });
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -132,20 +170,20 @@ class AuthService {
     }
   }
 
-  async googleAuth(idToken: string) {
+  async googleAuth(idToken: string, accessToken?: string): Promise<AuthResponse> {
     const data = await this.request('/auth/google', {
       method: 'POST',
-      body: JSON.stringify({ idToken }),
+      body: JSON.stringify({ idToken, accessToken }),
     });
 
-    this.setTokens(data.token, data.refreshToken);
-    return data;
+    this.setTokens(data.data.accessToken, data.data.refreshToken);
+    return data.data;
   }
 
-  private setTokens(token: string, refreshToken: string) {
-    this.token = token;
+  private setTokens(accessToken: string, refreshToken: string) {
+    this.token = accessToken;
     this.refreshToken = refreshToken;
-    localStorage.setItem('token', token);
+    localStorage.setItem('token', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
   }
 
@@ -162,6 +200,23 @@ class AuthService {
 
   getToken(): string | null {
     return this.token;
+  }
+
+  getRefreshToken(): string | null {
+    return this.refreshToken;
+  }
+
+  // Méthode utilitaire pour stocker l'email temporairement
+  setTempEmail(email: string) {
+    sessionStorage.setItem('tempEmail', email);
+  }
+
+  getTempEmail(): string | null {
+    return sessionStorage.getItem('tempEmail');
+  }
+
+  clearTempEmail() {
+    sessionStorage.removeItem('tempEmail');
   }
 }
 
